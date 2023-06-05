@@ -9,8 +9,10 @@ const {
   updateContact,
   deleteContact,
 } = require("../controllers/contactController");
+const { validateToken } = require("../middleware/validateTokenHandler");
 // route for getting all contacts amd creating new contact
 
+router.use(validateToken); // used to validate all the routes present
 router.route("/").get(getContacts).post(createContact);
 
 // route for getting a single contact

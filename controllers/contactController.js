@@ -2,17 +2,17 @@ const asyncHandler = require("express-async-handler");
 const Contact = require("../models/contactModel");
 //Desc get all contacts
 //@rout GET /api/contacts
-//@access public
+//@access private
 
 const getContacts = asyncHandler(async (req, res) => {
   //   res.send("Get all Contacts"); sending normal respons
-  const contacts = await Contact.find();
+  const contacts = await Contact.find({ user_id: req.user.id });
   res.status(200).json({ contacts }); // send json response
 });
 
 //Desc get  contact
 //@rout GET /api/contacts/:id
-//@access public
+//@access private
 
 const getContact = asyncHandler(async (req, res) => {
   // find if the contact is present or not
@@ -26,7 +26,7 @@ const getContact = asyncHandler(async (req, res) => {
 
 //Desc create new contacts
 //@rout POST /api/contacts
-//@access public
+//@access private
 
 const createContact = asyncHandler(async (req, res) => {
   console.log("The req body is:", req.body);
@@ -43,13 +43,14 @@ const createContact = asyncHandler(async (req, res) => {
     name,
     email,
     phone,
+    user_id: req.user.id,
   });
   res.status(201).json(contact); // send json response
 });
 
 //Desc update contacts
 //@rout PUT /api/contacts/:id
-//@access public
+//@access private
 
 const updateContact = asyncHandler(async (req, res) => {
   // find if the contact is present or not
@@ -57,6 +58,10 @@ const updateContact = asyncHandler(async (req, res) => {
   if (!contact) {
     res.status(404);
     throw new Error("Contact not found!!");
+  }
+  if (contact.user_id.toString() !== req.user.id) {
+    res.status(403);
+    throw new Error("User not permitted to perform this action.");
   }
   const updatedContact = await Contact.findByIdAndUpdate(
     req.params.id,
@@ -68,7 +73,7 @@ const updateContact = asyncHandler(async (req, res) => {
 
 //Desc delete contacts
 //@rout DELETE /api/contacts/:id
-//@access public
+//@access private
 
 const deleteContact = asyncHandler(async (req, res) => {
   // find if the contact is present or not
@@ -76,6 +81,10 @@ const deleteContact = asyncHandler(async (req, res) => {
   if (!contact) {
     res.status(404);
     throw new Error("Contact not found!!");
+  }
+  if (contact.user_id.toString() !== req.user.id) {
+    res.status(403);
+    throw new Error("User not permitted to perform this action.");
   }
   await Contact.findByIdAndDelete(req.params.id);
   res.status(200).json(contact); // send json response
